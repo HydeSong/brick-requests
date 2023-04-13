@@ -1,2 +1,3 @@
 # brick-requests
-brick-requests based on axios using ts
+模仿axios，使用ts实现
+# version 0.0.1
