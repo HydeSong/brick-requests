@@ -1,4 +1,4 @@
-import axios from '../../src/index'
+import axios, { AxiosError } from '../../src/index'
 import 'nprogress/nprogress.css'
 import NProgress from 'nprogress'
 
@@ -53,13 +53,16 @@ function loadProgressBar() {
     }
 
     const setupStopProgress = () => {
-        instance.interceptors.response.use(response => {
-            NProgress.done()
-            return response
-        }, error => {
-            NProgress.done()
-            return Promise.reject(error)
-        })
+        instance.interceptors.response.use(
+            response => {
+                NProgress.done()
+                return response
+            },
+            error => {
+                NProgress.done()
+                return Promise.reject(error)
+            }
+        )
     }
 
     setupStartProgress()
@@ -87,14 +90,41 @@ uploadEl!.addEventListener('click', e => {
     }
 })
 
+axios
+    .post(
+        '/more/post',
+        {
+            a: 1
+        },
+        {
+            auth: {
+                username: 'Yee1',
+                password: '123456'
+            }
+        }
+    )
+    .then(res => {
+        console.log(res)
+    })
 
-axios.post('/more/post', {
-    a: 1
-}, {
-    auth: {
-        username: 'Yee1',
-        password: '123456'
-    }
-}).then(res => {
-    console.log(res)
-})
+axios
+    .get('/more/304')
+    .then(res => {
+        console.log(res)
+    })
+    .catch((e: AxiosError) => {
+        console.log(e.message)
+    })
+
+axios
+    .get('/more/304', {
+        validateStatus(status) {
+            return status >= 200 && status < 400
+        }
+    })
+    .then(res => {
+        console.log(res)
+    })
+    .catch((e: AxiosError) => {
+        console.log(e.message)
+    })
