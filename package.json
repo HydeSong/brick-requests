@@ -89,7 +89,6 @@
     "@types/jasmine-ajax": "^3.3.3",
     "@types/jest": "^23.3.2",
     "@types/lodash": "4.14.149",
-    "@types/lodash.camelcase": "^4.3.7",
     "@types/node": "^10.11.0",
     "@types/nprogress": "^0.2.0",
     "@types/qs": "^6.9.7",
