@@ -1,182 +1,196 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const webpack = require('webpack')
-const webpackDevMiddleware = require('webpack-dev-middleware')
-const webpackHotMiddleware = require('webpack-hot-middleware')
-const WebpackConfig = require('./webpack.config')
+const express = require('express');
+const bodyParser = require('body-parser');
+const webpack = require('webpack');
+const webpackDevMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
+const WebpackConfig = require('./webpack.config');
+const cookieParser = require('cookie-parser')
+const multipart = require('connect-multiparty')
+const path = require('path')
 
-const app = express()
-const compiler = webpack(WebpackConfig)
+const app = express();
+const compiler = webpack(WebpackConfig);
 
 app.use(
   webpackDevMiddleware(compiler, {
     publicPath: '/__build__/',
     stats: {
       colors: true,
-      chunks: false
-    }
+      chunks: false,
+    },
   })
-)
+);
 
-app.use(webpackHotMiddleware(compiler))
+app.use(webpackHotMiddleware(compiler));
 
-app.use(express.static(__dirname, {
-  setHeaders(res) {
-    res.cookie('XSRF-TOKEN-D', '1234abc')
-  }
+app.use(
+  express.static(__dirname, {
+    setHeaders(res) {
+      res.cookie('XSRF-TOKEN-D', '1234abc');
+    },
+  })
+);
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(multipart({
+  uploadDir: path.resolve(__dirname, 'upload-file')
 }))
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+const router = express.Router();
 
-const router = express.Router()
+registerSimpleRouter();
 
-registerSimpleRouter()
+registerBaseRouter();
 
-registerBaseRouter()
+registerErrorRouter();
 
-registerErrorRouter()
+registerExtendRouter();
 
-registerExtendRouter()
+registerInterceptorRouter();
 
-registerInterceptorRouter()
+registerConfigRouter();
 
-registerConfigRouter()
+registerCancelRouter();
 
-registerCancelRouter()
+registerMoreRouter();
 
-registerMoreRouter()
+app.use(router);
 
-app.use(router)
-
-const port = process.env.PORT || 8000
+const port = process.env.PORT || 8000;
 module.exports = app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port}, Ctrl+C to stop`)
-})
+  console.log(`Server listening on http://localhost:${port}, Ctrl+C to stop`);
+});
 
 function registerSimpleRouter() {
-  router.get('/simple/get', function(req, res) {
+  router.get('/simple/get', function (req, res) {
     res.json({
-      msg: `hello world`
-    })
-  })
+      msg: `hello world`,
+    });
+  });
 }
 
 function registerBaseRouter() {
-  router.get('/base/get', function(req, res) {
-    res.json(req.query)
-  })
+  router.get('/base/get', function (req, res) {
+    res.json(req.query);
+  });
 
-  router.post('/base/post', function(req, res) {
-    res.json(req.body)
-  })
+  router.post('/base/post', function (req, res) {
+    res.json(req.body);
+  });
 
-  router.post('/base/buffer', function(req, res) {
-    let msg = []
+  router.post('/base/buffer', function (req, res) {
+    let msg = [];
     req.on('data', chunk => {
       if (chunk) {
-        msg.push(chunk)
+        msg.push(chunk);
       }
-    })
+    });
     req.on('end', () => {
-      let buf = Buffer.concat(msg)
-      res.json(buf.toJSON())
-    })
-  })
+      let buf = Buffer.concat(msg);
+      res.json(buf.toJSON());
+    });
+  });
 }
 
 function registerErrorRouter() {
-  router.get('/error/get', function(req, res) {
+  router.get('/error/get', function (req, res) {
     if (Math.random() > 0.5) {
       res.json({
-        msg: `hello world`
-      })
+        msg: `hello world`,
+      });
     } else {
-      res.status(500)
-      res.end()
+      res.status(500);
+      res.end();
     }
-  })
+  });
 
-  router.get('/error/timeout', function(req, res) {
+  router.get('/error/timeout', function (req, res) {
     setTimeout(() => {
       res.json({
-        msg: `hello world`
-      })
-    }, 3000)
-  })
+        msg: `hello world`,
+      });
+    }, 3000);
+  });
 }
 
 function registerExtendRouter() {
-  router.get('/extend/get', function(req, res) {
+  router.get('/extend/get', function (req, res) {
     res.json({
-      msg: `hello world`
-    })
-  })
+      msg: `hello world`,
+    });
+  });
 
-  router.options('/extend/options', function(req, res) {
-    res.end()
-  })
+  router.options('/extend/options', function (req, res) {
+    res.end();
+  });
 
-  router.delete('/extend/delete', function(req, res) {
-    res.end()
-  })
+  router.delete('/extend/delete', function (req, res) {
+    res.end();
+  });
 
-  router.head('/extend/head', function(req, res) {
-    res.end()
-  })
+  router.head('/extend/head', function (req, res) {
+    res.end();
+  });
 
-  router.post('/extend/post', function(req, res) {
-    res.json(req.body)
-  })
+  router.post('/extend/post', function (req, res) {
+    res.json(req.body);
+  });
 
-  router.put('/extend/put', function(req, res) {
-    res.json(req.body)
-  })
+  router.put('/extend/put', function (req, res) {
+    res.json(req.body);
+  });
 
-  router.patch('/extend/patch', function(req, res) {
-    res.json(req.body)
-  })
+  router.patch('/extend/patch', function (req, res) {
+    res.json(req.body);
+  });
 
-  router.get('/extend/user', function(req, res) {
+  router.get('/extend/user', function (req, res) {
     res.json({
       code: 0,
       message: 'ok',
       result: {
         name: 'jack',
-        age: 18
-      }
-    })
-  })
+        age: 18,
+      },
+    });
+  });
 }
 
 function registerInterceptorRouter() {
-  router.get('/interceptor/get', function(req, res) {
-    res.end('hello')
-  })
+  router.get('/interceptor/get', function (req, res) {
+    res.end('hello');
+  });
 }
 
 function registerConfigRouter() {
-  router.post('/config/post', function(req, res) {
-    res.json(req.body)
-  })
+  router.post('/config/post', function (req, res) {
+    res.json(req.body);
+  });
 }
 
 function registerCancelRouter() {
-  router.get('/cancel/get', function(req, res) {
+  router.get('/cancel/get', function (req, res) {
     setTimeout(() => {
-      res.json('hello cancel get')
-    }, 1000)
-  })
+      res.json('hello cancel get');
+    }, 1000);
+  });
 
-  router.post('/cancel/post', function(req, res) {
+  router.post('/cancel/post', function (req, res) {
     setTimeout(() => {
-      res.json(req.body)
-    }, 1000)
-  })
+      res.json(req.body);
+    }, 1000);
+  });
 }
 
 function registerMoreRouter() {
-  router.get('/more/get', function(req, res) {
-    res.json(req.cookies)
-  })
+  router.get('/more/get', function (req, res) {
+    res.json(req.cookies);
+  });
+
+  router.post('/more/upload', function (req, res) {
+    console.log(req.body, req.files);
+    res.end('upload success');
+  });
 }
